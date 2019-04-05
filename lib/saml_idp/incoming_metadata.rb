@@ -96,7 +96,8 @@ module SamlIdp
         "//md:SPSSODescriptor/md:AssertionConsumerService",
         md: metadata_namespace
       ).sort_by { |el| el["index"].to_i }.reduce([]) do |array, el|
-        props = el["Binding"].to_s.match /urn:oasis:names:tc:SAML:(?<version>\S+):bindings:(?<name>\S+)/
+        props = el["Binding"].to_s.match /urn:oasis:names:tc:SAML:(?<version>\S+):(bindings|profiles):(?<name>\S+)/
+        next if props[:version] == '1.0'
         array << { binding: props[:name], location: el["Location"], default: !!el["isDefault"] }
         array
       end

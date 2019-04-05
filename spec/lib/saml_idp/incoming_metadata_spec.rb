@@ -22,21 +22,60 @@ module SamlIdp
 </md:EntityDescriptor>
   eos
 
+  metadata_saml1 = <<-eos
+<?xml version="1.0"?>
+<md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" validUntil="2019-04-07T08:23:29Z" cacheDuration="PT604800S" entityID="test">
+    <md:SPSSODescriptor AuthnRequestsSigned="true" WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+        <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://test/logout" />
+        <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>
+        <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://test/acs" index="0" />
+        <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:1.0:profiles:browser-post" Location="https://test/acs" index="1"/>
+    </md:SPSSODescriptor>
+</md:EntityDescriptor>
+  eos
+
   describe IncomingMetadata do
-    it 'should properly set sign_assertions to false' do
-      metadata = SamlIdp::IncomingMetadata.new(metadata_1)
-      expect(metadata.sign_assertions).to eq(false)
-      expect(metadata.entity_id).to be_a(String)
+    let(:test_metadata) {}
+    subject { SamlIdp::IncomingMetadata.new(test_metadata) }
+
+    context 'false sign_assertions' do
+      let(:test_metadata) { metadata_1 }
+
+      it 'should properly set sign_assertions to false' do
+        expect(subject.sign_assertions).to eq(false)
+      end
     end
 
-    it 'should properly set sign_assertions to true' do
-      metadata = SamlIdp::IncomingMetadata.new(metadata_2)
-      expect(metadata.sign_assertions).to eq(true)
+    context 'true sign_assertions' do
+      let(:test_metadata) { metadata_2 }
+
+      it 'should properly set sign_assertions to true' do
+        expect(subject.sign_assertions).to eq(true)
+      end
     end
 
-    it 'should properly set sign_assertions to false when WantAssertionsSigned is not included' do
-      metadata = SamlIdp::IncomingMetadata.new(metadata_3)
-      expect(metadata.sign_assertions).to eq(false)
+    context 'no sign_assertions' do
+      let(:test_metadata) { metadata_3 }
+
+      it 'should properly set sign_assertions to false when WantAssertionsSigned is not included' do
+        expect(subject.sign_assertions).to eq(false)
+      end
+    end
+
+    context 'entity_id' do
+      let(:test_metadata) { metadata_1 }
+
+      it 'should extract entity id as string' do
+        expect(subject.entity_id).to be_a(String)
+      end
+    end
+
+    context 'acs' do
+      let(:test_metadata) { metadata_saml1 }
+
+      it 'should ignore saml 1.0 attributes' do
+        expect { subject.assertion_consumer_services }.not_to raise_error
+      end
     end
   end
 end
