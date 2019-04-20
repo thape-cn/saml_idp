@@ -38,7 +38,7 @@ module SamlIdp
     def logout
       idp_logout
       @saml_response = idp_make_saml_response(nil)
-      render :template => "saml_idp/idp/saml_post", :layout => false
+      render :template => "saml_idp/idp/saml_logout_post", :layout => false
     end
 
     def idp_logout
