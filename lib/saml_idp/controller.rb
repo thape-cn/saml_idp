@@ -118,7 +118,7 @@ module SamlIdp
     end
 
     def saml_acs_url
-      saml_request.acs_url
+      saml_request.acs_url.presence || saml_request.service_provider.acs_url
     end
 
     def saml_logout_url
