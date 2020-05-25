@@ -35,6 +35,11 @@ module SamlIdp
 
     def validate_saml_request(raw_saml_request = params[:SAMLRequest])
       decode_request(raw_saml_request)
+      if request.referrer.present?
+        uri = URI.parse(URI.encode(request.referrer.strip))
+        Rails.logger.debug "URI: #{uri.host}"
+        cookies[:from_saml_host] = { value: uri.host, expires: 25.seconds }
+      end
       return true if valid_saml_request?
       if defined?(::Rails)
         if Rails::VERSION::MAJOR >= 4
