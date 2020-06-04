@@ -38,7 +38,7 @@ module SamlIdp
       if request.referrer.present?
         uri = URI.parse(URI.encode(request.referrer.strip))
         Rails.logger.debug "URI: #{uri.host}"
-        cookies[:from_saml_host] = { value: uri.host, expires: 25.seconds }
+        cookies[:from_saml_host] = { value: uri.host, expires: 70.seconds }
       end
       return true if valid_saml_request?
       if defined?(::Rails)
