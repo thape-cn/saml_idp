@@ -36,7 +36,13 @@ module SamlIdp
     def validate_saml_request(raw_saml_request = params[:SAMLRequest])
       decode_request(raw_saml_request)
       if request.referrer.present?
-        uri = URI.parse(URI.encode(request.referrer.strip))
+        # Given the deprecation of `URI::escape` and `URI::encode`
+        # it is needed to replace it with `URI::encode_www_form_component`.
+        # This method, does replace spaces with `+` instead of `%20`.
+        # Therefore, to keep backwards compatibility, we're replacing the resulting `+`
+        # back with `%20`.
+        uri_referrer = URI.encode_www_form_component(request.referrer.strip).gsub('+', '%20')
+        uri = URI.parse(uri_referrer)
         Rails.logger.debug "URI: #{uri.host}"
         cookies[:from_saml_host] = { value: uri.host, expires: 70.seconds }
       end
